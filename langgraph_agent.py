@@ -24,43 +24,17 @@ def initialize_vector_dbs():
     embeddings = get_embeddings()
     retrievers = {}
     
-    if not os.path.exists(DATA_FOLDER):
-        os.makedirs(DATA_FOLDER)
-        print(colored(f"⚠️ Put PDFs into {DATA_FOLDER} folder", "red"))
-        return {}
-
-    for key, filename in FILES.items():
+    # 這裡不再負責建立資料庫，只負責讀取
+    for key in FILES.keys():
         persist_dir = os.path.join(DB_FOLDER, key)
-        file_path = os.path.join(DATA_FOLDER, filename)
 
         if os.path.exists(persist_dir):
-            print(f"✅ Found existing DB for {key}")
             vectorstore = Chroma(persist_directory=persist_dir, embedding_function=embeddings)
-        elif os.path.exists(file_path):
-            print(f"🔨 Building index for {key} (This happens once)...")
-            loader = PyMuPDFLoader(file_path)
-            docs = loader.load()
-
-            # TODO (Optional): Clean the data to remove noise (e.g., "\n")
-            # You can write a loop here to replace newlines with spaces
-            # or remove headers/footers.
-            # Example (Dirty data cleanup):
-            # for doc in docs:
-            #     doc.page_content = doc.page_content.replace("\n", " ")
-
-            splitter = RecursiveCharacterTextSplitter(
-                chunk_size=2000,     # <--- can modify
-                chunk_overlap=400,   # <--- can modify 
-                separators=["\n\n", "\n", " ", ""] 
-            )
-            splits = splitter.split_documents(docs)
-            
-            vectorstore = Chroma.from_documents(splits, embeddings, persist_directory=persist_dir)
+            retrievers[key] = vectorstore.as_retriever(search_kwargs={"k": 3})
         else:
-            print(colored(f"❌ Missing file: {filename}", "red"))
+            print(colored(f"❌ Error: Database for '{key}' not found!", "red"))
+            print(colored(f"⚠️ Please run 'python build_rag.py' first to build the vector index.", "yellow"))
             continue
-        
-        retrievers[key] = vectorstore.as_retriever(search_kwargs={"k": 3})
     
     return retrievers
 
