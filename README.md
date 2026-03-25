@@ -5,7 +5,7 @@ Before you begin, ensure you have the following installed:
 
 * Python 3.11 (Strict requirement) 
 
-* Google Cloud API Key (for Gemini-2.0-Flash)
+* Google Cloud API Key or other LLM Key
 # ⚙️ Environment Setup
 ### 1. Virtual Environment Setup
 
@@ -34,7 +34,7 @@ venv\Scripts\activate
 
 ### 3. Environment Variables (.env)
 
-Rename the file `.env_template` to `.env` in the root directory and add your GOOGLE_API_KEY
+Rename the file `.env_example` to `.env` in the root directory and add your API_KEY
 
 # 📂 File Descriptions
 
