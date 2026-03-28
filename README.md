@@ -148,10 +148,10 @@ python evaluator.py        # TEST_MODE = "GRAPH"
 
 ## ⚠️ Common Issues
 
-| Error                              | Cause                          | Fix                                      |
-| ---------------------------------- | ------------------------------ | ---------------------------------------- |
-| `Unsupported LLM_PROVIDER: gemini` | Wrong provider name            | Use `google` not `gemini` in `.env`      |
-| `dimension 384 vs 768 mismatch`    | Embedding model changed        | Delete `chroma_db/` and rebuild          |
-| `RetryError InvalidArgumentError`  | Token limit or rate limit hit  | Add `time.sleep(2)`, reduce `max_tokens` |
-| `cannot import create_react_agent` | LangChain v1.x breaking change | Import from `langgraph.prebuilt` instead |
-| `ValueError` on Gemini             | `SystemMessage` not supported  | Use plain string prompt instead          |
+| Error                              | Cause                                                  | Fix                                                                                                             |
+| :--------------------------------- | :----------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| `Quota Exceeded / RateLimit`       | API limits reached on primary provider (Google/OpenAI) | Switch `LLM_PROVIDER` to `groq` in `.env` for high-limit inference.                                             |
+| `Lower Accuracy / Poor Reasoning`  | Using Groq (Llama-3/Mixtral) as fallback               | Groq is faster but may struggle with complex financial RAG logic; refine prompts for more explicit JSON output. |
+| `dimension 384 vs 768 mismatch`    | Embedding model changed (MiniLM vs MPNet)              | Delete `chroma_db/` folder and run `python build_rag.py` to rebuild the vector database.                        |
+| `cannot import create_react_agent` | LangChain v1.x breaking change                         | Import from `langgraph.prebuilt` instead of the legacy `langchain.agents` module.                               |
+| `RetryError / Workflow Crashes`    | Token limit or rate limit hit                          | Add `time.sleep(2)` in loops and ensure prompt formatting matches the specific LLM requirements.                |
