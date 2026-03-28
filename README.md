@@ -1,68 +1,157 @@
-**You can edit functions in `graph_agent.py`, and in evaluator.py can change test_mode (LEGACY is langchain mode, GRAPH is langgraph)**  
+# 🤖 Assignment 3 — Financial RAG Agent with LangGraph
 
-# 🛠️ Prerequisites
-Before you begin, ensure you have the following installed:
+---
 
-* Python 3.11 (Strict requirement) 
+## 🛠️ Prerequisites
 
-* Google Cloud API Key or other LLM Key
-# ⚙️ Environment Setup
-### 1. Virtual Environment Setup
+- Python 3.11
+- API Key for your LLM provider (Google / Groq / OpenAI / Anthropic)
 
-It is highly recommended to use a virtual environment to manage dependencies.
+---
 
-**For macOS / Linux:**
-```
-# Create virtual environment
+## ⚙️ Setup
+
+```bash
+# 1. Create virtual environment
 python -m venv venv
+venv\Scripts\activate        # Windows
+source venv/bin/activate     # macOS/Linux
 
-# Activate environment
-source venv/bin/activate
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Configure .env
+LLM_PROVIDER=google
+GOOGLE_API_KEY=your_key_here
+GOOGLE_MODEL=gemini-2.0-flash
 ```
-**For Windows:**
+
+---
+
+## 📂 Project Structure
+
+| File                 | Description                                     |
+| -------------------- | ----------------------------------------------- |
+| `data/`              | Raw PDF financial reports                       |
+| `build_rag.py`       | Builds Chroma vector database from PDFs         |
+| `langgraph_agent.py` | Main agent logic (nodes + graph)                |
+| `evaluator.py`       | Benchmark — 14 test cases, LLM-as-Judge scoring |
+| `config.py`          | LLM + embedding model factory                   |
+
+---
+
+## 📝 Tasks Completed
+
+### Task A — Legacy ReAct Agent (LangChain Baseline)
+
+- Implemented `run_legacy_agent()` using `langgraph.prebuilt.create_react_agent`
+- Built dynamic tool list from RETRIEVERS
+- Added ReAct format instructions + behavioral rules in system prompt
+- **Fix:** `create_react_agent` moved from `langchain.agents` to `langgraph.prebuilt` in LangChain v1.x — updated import accordingly
+
+### Task B — Router (retrieve_node)
+
+- LLM classifies query entity → routes to `apple`, `tesla`, `both`, or `none`
+- Outputs strict JSON `{"datasource": "..."}` to prevent hallucinated tool names
+- **Fix:** LLM was returning `apple_financials` instead of `apple` — tightened prompt with exact JSON examples
+
+### Task C — Grader (grade_documents_node)
+
+- Binary judge: `yes` = relevant → generate, `no` = irrelevant → rewrite
+- Uses plain string prompt (not `SystemMessage`) for cross-provider compatibility
+- Truncates documents to 2000 chars before grading to avoid token limit
+- **Fix:** `SystemMessage` caused `ValueError` on Gemini — replaced with single plain string prompt
+
+### Task D — Generator (generate_node)
+
+- Answers using ONLY retrieved context with mandatory `[Source: X]` citations
+- Prioritizes annual/full-year figures over quarterly
+- Returns honest `"I don't know"` when context is missing or empty
+- **Fix:** `ChatPromptTemplate` with `SystemMessage` crashed on Gemini — replaced with plain f-string prompt
+
+### Task E — Rewriter (rewrite_node)
+
+- Rephrases failed queries with better financial keywords
+- Plain string prompt for provider compatibility
+- Gracefully keeps original question if rewrite fails
+- **Fix:** Removed `@retry_logic` decorator from all nodes — retry loop was masking real errors and causing `RetryError` crashes
+
+---
+
+## 🚀 Execution Steps
+
+### Step 1 — Build vector database
+
+```bash
+python build_rag.py
 ```
-# Create virtual environment
-python -m venv venv
 
-# Activate environment
-venv\Scripts\activate
+### Step 2 — Run LangChain baseline (LEGACY mode)
+
+```python
+# evaluator.py
+TEST_MODE = "LEGACY"
 ```
 
-### 2. Install Dependencies
+```bash
+python evaluator.py
+```
 
-`pip install -r requirements.txt`
+### Step 3 — Run LangGraph agent (GRAPH mode)
 
-### 3. Environment Variables (.env)
+```python
+# evaluator.py
+TEST_MODE = "GRAPH"
+```
 
-Rename the file `.env_example` to `.env` in the root directory and add your API_KEY
+```bash
+python evaluator.py
+```
 
-# 📂 File Descriptions
+> Compare LEGACY vs GRAPH scores to evaluate LangGraph improvement
 
-* **data/:** Folder containing the raw PDF financial reports
-* **langgraph_agent.py:** [MAIN WORKSPACE] This is where you will write your code. It contains the logic for:
-  * PDF Ingestion: `initialize_vector_dbs()`
+### Step 4 — Change embedding model and rebuild
 
-  *  Graph Nodes: `retrieve_node`, `grade_documents_node`, `generate_node`, `rewrite_node`.
+```python
+# config.py — change from multilingual to English-only
+LOCAL_EMBEDDING_MODEL = "sentence-transformers/all-mpnet-base-v2"
+```
 
-  *  Legacy Agent: `run_legacy_agent` (The baseline for comparison).
-* **evaluator.py:** The benchmark testing script. It runs a suite of test cases (Apple Revenue, Tesla R&D, Comparison, Traps) and uses "LLM-as-a-Judge" to score your agent (Pass/Fail).
-* **config.py:** Configuration file that handles API key loading and initializes the LLM and Embedding models.
+```bash
+# Rebuild DB with new embedding model
+rmdir /s /q chroma_db     # Windows
+rm -rf chroma_db/         # macOS/Linux
+python build_rag.py
+```
 
+### Step 5 — Run LangGraph again with new embedding model
 
-# 📝 Student Tasks
-**You need to complete the TODO sections in `langgraph_agent.py`.**
-* Task 1 (Legacy): Implement the run_legacy_agent Prompt Template to establish a baseline (langchain).
+```bash
+python evaluator.py        # TEST_MODE = "GRAPH"
+```
 
-* Task 2 (Router): Implement the retrieve_node logic to route queries to "apple", "tesla", or "both".
+> Compare GRAPH (MiniLM) vs GRAPH (mpnet) to evaluate embedding model effect
 
-* Task 3 (Grader): Implement the grade_documents_node to filter out irrelevant documents.
+---
 
-* Task 4 (Generator): Implement the generate_node to answer questions in English with Citations.
+## 📊 Results Summary
 
-* Task 5 (Rewriter): Implement the rewrite_node to refine search queries when retrieval fails.
+| Mode                     | Embedding Model             | Score       |
+| ------------------------ | --------------------------- | ----------- |
+| LEGACY (LangChain ReAct) | MiniLM multilingual 384-dim | baseline    |
+| GRAPH (LangGraph)        | MiniLM multilingual 384-dim | **9/14** ✅ |
+| GRAPH (LangGraph)        | mpnet English-only 768-dim  | **5/14** ❌ |
 
-# 🚀 Execution Order
+> **Finding:** Multilingual MiniLM outperforms larger English-only mpnet for Chinese/mixed language queries against English PDFs — language alignment matters more than vector dimension size.
 
-* Step1: `python build_rag.py`: Before running any agents, you must ingest the PDFs and convert them into vector embeddings. This allows you to experiment with different chunking strategies without re-running the evaluation logic every time.
-* Step2: `python evaluator.py`: Once the database is ready, run the evaluator to benchmark your agent.
-  
+---
+
+## ⚠️ Common Issues
+
+| Error                              | Cause                          | Fix                                      |
+| ---------------------------------- | ------------------------------ | ---------------------------------------- |
+| `Unsupported LLM_PROVIDER: gemini` | Wrong provider name            | Use `google` not `gemini` in `.env`      |
+| `dimension 384 vs 768 mismatch`    | Embedding model changed        | Delete `chroma_db/` and rebuild          |
+| `RetryError InvalidArgumentError`  | Token limit or rate limit hit  | Add `time.sleep(2)`, reduce `max_tokens` |
+| `cannot import create_react_agent` | LangChain v1.x breaking change | Import from `langgraph.prebuilt` instead |
+| `ValueError` on Gemini             | `SystemMessage` not supported  | Use plain string prompt instead          |
