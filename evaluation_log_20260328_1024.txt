@@ -1,0 +1,205 @@
+
+==================================================
+📄 ASSIGNMENT 3 EVALUATION REPORT
+⏰ Time: 2026-03-28 10:24:11
+🤖 Agent Mode: GRAPH
+==================================================
+
+🚀 STARTING AI-POWERED EVALUATION...
+==================================================
+
+Running: Test A: Apple Revenue...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: 根據 [Source: Apple]，Apple 2024 年的總營收 (Total net sales) 是 391,035 百萬美元。
+✅ PASS (4.93s)
+--------------------------------------------------
+Running: Test B: Tesla R&D...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: 根據提供的內容，Tesla 2024 年的研發費用 (R&D expenses) 為 4,540 million [Source: Tesla]。
+❌ FAIL (4.43s)
+   Agent Answer: 根據提供的內容，Tesla 2024 年的研發費用 (R&D expenses) 為 4,540 million [Source: Tesla]。
+   Judge Verdict: FAIL
+--------------------------------------------------
+Running: Test D: Apple Services Cost...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: 根據 [Source: Apple]，Apple 2024 年的服務成本 (Cost of sales - Services) 為 6,485 百萬美元（三個月）和 25,119 百萬美元（十二個月）[Source: Apple]。
+✅ PASS (4.73s)
+--------------------------------------------------
+Running: Test E: Tesla Energy Revenue...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: 根據 [Source: Tesla]，Tesla 2024 年的「能源發電與儲存 (Energy generation and storage)」營收為 10,086 百萬美元。
+❌ FAIL (4.47s)
+   Agent Answer: 根據 [Source: Tesla]，Tesla 2024 年的「能源發電與儲存 (Energy generation and storage)」營收為 10,086 百萬美元。
+   Judge Verdict: FAIL
+--------------------------------------------------
+Running: Test G: Unknown Info...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: 2025 年蘋果 iPhone 17 預計發布價格是多少？
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: 2025 年蘋果 iPhone 17 預計發布價格範圍是多少？或者可以查詢蘋果公司對於 2025 年新款 iPhone 的官方價格公告。
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+   (Max retries reached, generating anyway...)
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: I don't know.
+✅ PASS (11.21s)
+--------------------------------------------------
+Running: Test A1 [Eng]: Apple Revenue...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: Apple's Total Net Sales for the fiscal year 2024 was $391,035 million [Source: Apple].
+✅ PASS (4.34s)
+--------------------------------------------------
+Running: Test A2 [Eng]: Tesla Automotive Revenue...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: The specific revenue figure for 'Automotive sales' for Tesla in 2024 was $72,480 million [Source: Tesla].
+❌ FAIL (13.12s)
+   Agent Answer: The specific revenue figure for 'Automotive sales' for Tesla in 2024 was $72,480 million [Source: Tesla].
+   Judge Verdict: FAIL
+--------------------------------------------------
+Running: Test B1 [Mixed]: Apple R&D...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: 根據 Apple 的財務報表 [Source: Apple]，2024 年的研發費用 (Research and development expenses) 為 31,370 百萬美元。 [Source: Apple]
+✅ PASS (13.29s)
+--------------------------------------------------
+Running: Test B2 [Mixed]: Tesla CapEx...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: 特斯拉 2024 年資本支出預估或實際數字是多少？
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: 特斯拉 2024 年預估資本支出或實際數字是多少？或特斯拉 2024 年資本開支預測數據是多少？
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+   (Max retries reached, generating anyway...)
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: I don't know.
+❌ FAIL (32.56s)
+   Agent Answer: I don't know.
+   Judge Verdict: FAIL
+--------------------------------------------------
+Running: Test C1 [Eng]: R&D Comparison...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: both
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: According to the context, Apple's R&D expenses for the twelve months ended September 28, 2024, were $31,370 million [Source: Apple]. 
+
+For Tesla, the R&D expenses for the year ended December 31, 2024, were not directly stated in the provided context. However, it is mentioned that R&D expenses increa...
+❌ FAIL (13.54s)
+   Agent Answer: According to the context, Apple's R&D expenses for the twelve months ended September 28, 2024, were $31,370 million [Source: Apple]. 
+
+For Tesla, the R&D expenses for the year ended December 31, 2024, were not directly stated in the provided context. However, it is mentioned that R&D expenses increa...
+   Judge Verdict: FAIL
+--------------------------------------------------
+Running: Test C2 [Eng]: Gross Margin Analysis...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: both
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: According to the context, Apple's Total Gross Margin for the twelve months ended September 28, 2024, was $180,683 million [Source: Apple], and its Total Net Sales for the same period was $391,035 million [Source: Apple]. Therefore, Apple's Total Gross Margin percentage is approximately ($180,683 / $...
+✅ PASS (14.47s)
+--------------------------------------------------
+Running: Test D1 [Eng]: Apple Services Cost...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: According to the Consolidated Statements of Operations [Source: Apple], Apple's 'Cost of sales' for 'Services' in the twelve months ended September 28, 2024, was $25,119.
+✅ PASS (13.90s)
+--------------------------------------------------
+Running: Test E1 [Mixed]: 2025 Projection (Trap)...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: Apple 2025 年 iPhone 銷量預測或財務預測報告中有關銷量目標的資料嗎？
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: Apple 2025 年 iPhone 銷量預測報告或財務預測中關於銷量目標、收入預測、市場佔有率或年度銷售指標的資料。
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+   (Max retries reached, generating anyway...)
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: I don't know.
+✅ PASS (28.58s)
+--------------------------------------------------
+Running: Test F1 [Eng]: CEO Identity...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: Elon Musk signed the 10-K report as the Chief Executive Officer (Principal Executive Officer) for Tesla [Source: Tesla].
+✅ PASS (12.80s)
+--------------------------------------------------
+
+📊 FINAL SCORE: 9/14

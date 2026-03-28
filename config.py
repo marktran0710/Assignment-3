@@ -14,8 +14,6 @@ DB_FOLDER = "chroma_db"
 # ==============================================================================
 # 2. Dataset Configuration
 # ==============================================================================
-# Default file-to-key mapping. 
-# Better yet, this could be moved to a config.json or scanned from folder.
 FILES = {
     "apple": "FY24_Q4_Consolidated_Financial_Statements.pdf",
     "tesla": "tsla-20241231-gen.pdf"
@@ -36,11 +34,23 @@ def get_embeddings():
 def get_llm(temperature=0):
     """
     Returns a LangChain Chat Model based on environment variables.
-    Supported Providers: google, openai, anthropic
+    Supported Providers: google, openai, anthropic, groq
     """
-    provider = os.getenv("LLM_PROVIDER", "google").lower()
-    
-    if provider == "google":
+    provider = os.getenv("LLM_PROVIDER", "groq").lower()
+
+    if provider == "groq":
+        from langchain_groq import ChatGroq
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            print(colored("⚠️ Warning: GROQ_API_KEY not found!", "red"))
+        return ChatGroq(
+            model=os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+            temperature=temperature,
+            api_key=api_key,
+            max_tokens=2048
+        )
+
+    elif provider == "google":
         from langchain_google_genai import ChatGoogleGenerativeAI
         api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
@@ -52,7 +62,7 @@ def get_llm(temperature=0):
             convert_system_message_to_human=True,
             max_output_tokens=2048
         )
-    
+
     elif provider == "openai":
         from langchain_openai import ChatOpenAI
         api_key = os.getenv("OPENAI_API_KEY")
@@ -63,7 +73,7 @@ def get_llm(temperature=0):
             temperature=temperature,
             api_key=api_key
         )
-    
+
     elif provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
         api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -74,6 +84,6 @@ def get_llm(temperature=0):
             temperature=temperature,
             api_key=api_key
         )
-    
+
     else:
         raise ValueError(f"❌ Unsupported LLM_PROVIDER: {provider}")

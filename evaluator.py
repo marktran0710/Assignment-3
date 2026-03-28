@@ -13,7 +13,7 @@ from langgraph_agent import run_graph_agent, run_legacy_agent
 from config import get_llm
 from langchain_core.prompts import ChatPromptTemplate
 
-TEST_MODE = "LEGACY" # Options: "GRAPH" or "LEGACY"
+TEST_MODE = "GRAPH" # Options: "GRAPH" or "LEGACY"
 
 class DualLogger:
     def __init__(self, filename="evaluation_log.txt"):
@@ -176,12 +176,20 @@ def run_evaluation():
                 answer = run_graph_agent(test["question"])
             else:
                 answer = run_legacy_agent(test["question"])
+            
+            # --- Fix: ensure answer is always a string ---
+            if isinstance(answer, list):
+                answer = answer[-1].content if hasattr(answer[-1], "content") else str(answer[-1])
+            elif not isinstance(answer, str):
+                answer = str(answer)
+
             clean_answer = answer.split("Observation:")[0].strip()
             display_answer = clean_answer[:300] + "..." if len(clean_answer) > 300 else clean_answer
+
             result = grade_answer_with_llm(
-                test["question"], 
-                clean_answer, 
-                test["must_contain"], 
+                test["question"],
+                clean_answer,
+                test["must_contain"],
                 test["forbidden"]
             )
             
