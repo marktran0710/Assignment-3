@@ -1,39 +1,27 @@
 import os
 import json
-from typing import Annotated, List, TypedDict, Literal
+from typing import TypedDict
 from langgraph.graph import END, StateGraph
-from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_chroma import Chroma
 from termcolor import colored
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+import time
 
 from config import get_embeddings, get_llm, DATA_FOLDER, DB_FOLDER, FILES
-
-
-# Generic Retry Logic (Provider agnostic)
-retry_logic = retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=2, max=10),
-    retry=retry_if_exception_type(Exception)
-)
 
 
 def initialize_vector_dbs():
     embeddings = get_embeddings()
     retrievers = {}
-    
     for key in FILES.keys():
         persist_dir = os.path.join(DB_FOLDER, key)
-
         if os.path.exists(persist_dir):
             vectorstore = Chroma(persist_directory=persist_dir, embedding_function=embeddings)
             retrievers[key] = vectorstore.as_retriever(search_kwargs={"k": 3})
         else:
             print(colored(f"❌ Error: Database for '{key}' not found!", "red"))
             print(colored(f"⚠️ Please run 'python build_rag.py' first.", "yellow"))
-            continue
-    
     return retrievers
 
 RETRIEVERS = initialize_vector_dbs()
@@ -47,30 +35,26 @@ class AgentState(TypedDict):
     needs_rewrite: str
 
 
-@retry_logic
 def retrieve_node(state: AgentState):
     print(colored("--- 🔍 RETRIEVING ---", "blue"))
     question = state["question"]
-    llm = get_llm()
-
-    options = list(FILES.keys()) + ["both", "none"]
-    router_prompt = f"""
-    Analyze the user question and route it to the correct financial data source
-    based on the ENTITY mentioned in the query.
-
-    Rules:
-    - "apple"  → question mentions Apple Inc., AAPL, iPhone, Tim Cook, or Apple products
-    - "tesla"  → question mentions Tesla Inc., TSLA, Elon Musk (in Tesla context), EVs by Tesla
-    - "both"   → question mentions or compares BOTH companies
-    - "none"   → question is completely unrelated to Apple or Tesla financials
-
-    Options: {', '.join(options)}
-    Output ONLY valid JSON: {{"datasource": "..."}}
-
-    User Question: {question}
-    """
 
     try:
+        time.sleep(2)
+        llm = get_llm()
+        options = list(FILES.keys()) + ["both", "none"]
+        router_prompt = f"""You are a router. Classify the question to exactly one of these options: {', '.join(options)}
+
+Rules:
+- apple  → only about Apple Inc.
+- tesla  → only about Tesla Inc.
+- both   → compares or mentions both companies
+- none   → unrelated to Apple or Tesla
+
+CRITICAL: Output ONLY this exact JSON with no other text: {{"datasource": "apple"}} or {{"datasource": "tesla"}} or {{"datasource": "both"}} or {{"datasource": "none"}}
+
+User Question: {question}"""
+
         response = llm.invoke(router_prompt)
         content = response.content.strip()
 
@@ -92,9 +76,6 @@ def retrieve_node(state: AgentState):
 
     print(colored(f"🎯 Routing to: {target}", "cyan"))
 
-    # --- Invoke retrievers based on entity ---
-    docs_content = ""
-
     if target == "none":
         print(colored("ℹ️  Out-of-scope question. Skipping retrieval.", "yellow"))
         return {
@@ -104,43 +85,59 @@ def retrieve_node(state: AgentState):
 
     targets_to_search = list(FILES.keys()) if target == "both" else [target]
 
-    for t in targets_to_search:
+    docs_content = ""
+    for i, t in enumerate(targets_to_search):
         if t in RETRIEVERS:
-            docs = RETRIEVERS[t].invoke(question)
-            source_name = t.capitalize()
-            docs_content += f"\n\n[Source: {source_name}]\n" + "\n".join([d.page_content for d in docs])
+            if i > 0:
+                time.sleep(3)
+            try:
+                docs = RETRIEVERS[t].invoke(question)
+                source_name = t.capitalize()
+                docs_content += f"\n\n[Source: {source_name}]\n" + "\n".join([d.page_content for d in docs])
+            except Exception as e:
+                print(colored(f"❌ Retriever error for '{t}': {e}", "red"))
         else:
             print(colored(f"❌ Retriever for '{t}' not available.", "red"))
+
+    # --- Truncate to avoid token limit ---
+    max_chars = 4000
+    if len(docs_content) > max_chars:
+        docs_content = docs_content[:max_chars] + "\n...[truncated]"
 
     if not docs_content:
         docs_content = "[Retrieval returned no results.]"
 
     return {"documents": docs_content, "search_count": state["search_count"] + 1}
 
-@retry_logic
+
 def grade_documents_node(state: AgentState):
     print(colored("--- ⚖️ GRADING ---", "yellow"))
     question = state["question"]
     documents = state["documents"]
-    llm = get_llm()
 
-    system_prompt = """You are a binary relevance judge for a financial RAG system.
-
-                        Evaluate whether the retrieved document contains information useful for answering the user's question.
-
-                        Output ONLY one word — nothing else:
-                        - yes  → document is relevant, proceed to generate an answer
-                        - no   → document is irrelevant or noisy, trigger a query rewrite"""
-
-    msg = [
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=f"User question: {question}\n\nRetrieved document:\n{documents}")
-    ]
+    # --- Truncate before grading ---
+    if len(documents) > 2000:
+        documents = documents[:2000] + "\n...[truncated]"
 
     try:
-        response = llm.invoke(msg)
+        time.sleep(2)
+        llm = get_llm()
+
+        # --- Plain string prompt — works for ALL providers including Gemini ---
+        prompt = f"""You are a binary relevance judge for a financial RAG system.
+Output ONLY one word — nothing else:
+- yes → document is relevant, proceed to generate
+- no  → document is irrelevant, trigger rewrite
+
+User question: {question}
+
+Retrieved document:
+{documents}
+
+Your answer (yes or no):"""
+
+        response = llm.invoke(prompt)
         content = response.content.strip().lower()
-        # Extract first word only — guards against verbose LLM responses
         grade = "yes" if content.startswith("yes") else "no"
 
     except Exception as e:
@@ -155,14 +152,11 @@ def grade_documents_node(state: AgentState):
     return {"needs_rewrite": grade}
 
 
-@retry_logic
 def generate_node(state: AgentState):
     print(colored("--- ✍️ GENERATING ---", "green"))
     question = state["question"]
     documents = state["documents"]
-    llm = get_llm()
 
-    # --- Detect empty/fallback documents before invoking LLM ---
     fallback_signals = [
         "[No relevant financial data found for this query.]",
         "[Retrieval returned no results.]",
@@ -171,37 +165,35 @@ def generate_node(state: AgentState):
         print(colored("   ⚠️ No usable context. Returning 'I don't know'.", "yellow"))
         return {"generation": "I don't know. No relevant financial data was found to answer this question."}
 
-    system_prompt = """You are a strict financial analyst assistant.
-
-                        Your job is to answer the user's question using ONLY the provided context.
-
-                        Rules:
-                        1. CITATIONS: Every factual claim MUST be followed by its source tag exactly as it appears 
-                        in the context (e.g., [Source: Apple], [Source: Tesla]).
-                        2. HONESTY: If the context does not contain enough information to answer the question — 
-                        even partially — respond with exactly: "I don't know."
-                        3. NO HALLUCINATION: Do not infer, assume, or use knowledge outside the provided context.
-                        4. PARTIAL ANSWERS: If only part of the question can be answered from context, answer 
-                        what you can with citations, then state "I don't know" for the missing parts.
-                        5. FORMAT: Write in clear, concise prose. Do not fabricate numbers or dates.
-
-    Context:
-    {context}"""
-
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("human", "{question}"),
-    ])
-
-    chain = prompt | llm
+    # --- Truncate before generating ---
+    if len(documents) > 3000:
+        documents = documents[:3000] + "\n...[truncated]"
 
     try:
-        response = chain.invoke({"context": documents, "question": question})
+        time.sleep(2)
+        llm = get_llm()
+
+        # --- Plain string prompt — works for ALL providers including Gemini ---
+        prompt = f"""You are a strict financial analyst assistant.
+Answer using ONLY the provided context. Do not use outside knowledge.
+
+Rules:
+1. ANNUAL DATA PRIORITY: Always prefer full-year/twelve-month figures over quarterly ones.
+2. CITATIONS: Every factual claim MUST cite its source (e.g., [Source: Apple], [Source: Tesla]).
+3. HONESTY: If the context lacks the answer, respond exactly: "I don't know."
+4. NO HALLUCINATION: Never fabricate numbers or dates.
+
+Context:
+{documents}
+
+Question: {question}
+
+Answer:"""
+
+        response = llm.invoke(prompt)
         answer = response.content.strip()
 
-        # --- Safety net: if LLM returns empty, return honest fallback ---
         if not answer:
-            print(colored("   ⚠️ LLM returned empty response.", "yellow"))
             return {"generation": "I don't know. The model did not return an answer."}
 
         print(colored("   ✅ Answer generated successfully.", "green"))
@@ -211,21 +203,27 @@ def generate_node(state: AgentState):
         print(colored(f"   ❌ Generation error: {e}", "red"))
         return {"generation": "I don't know. An error occurred during answer generation."}
 
-@retry_logic
-def rewrite_node(state: AgentState): 
+
+def rewrite_node(state: AgentState):
     print(colored("--- 🔄 REWRITING QUERY ---", "red"))
     question = state["question"]
-    llm = get_llm()
-    
-    msg = [ 
-        HumanMessage(content=f"The previous search for '{question}' yielded irrelevant results. \n"
-                             f"Please rephrase this question to be more specific or use better keywords for a financial search engine. \n"
-                             f"Output ONLY the new question text.")
-    ]
-    response = llm.invoke(msg)
-    new_query = response.content.strip()
-    print(f"   New Question: {new_query}")
-    return {"question": new_query}
+
+    try:
+        time.sleep(2)
+        llm = get_llm()
+        prompt = f"""The previous search for '{question}' yielded irrelevant results.
+Please rephrase this question to be more specific or use better keywords for a financial search engine.
+Output ONLY the new question text."""
+
+        response = llm.invoke(prompt)
+        new_query = response.content.strip()
+        print(f"   New Question: {new_query}")
+        return {"question": new_query}
+
+    except Exception as e:
+        print(colored(f"   ⚠️ Rewrite error: {e}. Keeping original question.", "yellow"))
+        return {"question": question}
+
 
 def build_graph():
     workflow = StateGraph(AgentState)
@@ -242,7 +240,7 @@ def build_graph():
         if state["needs_rewrite"] == "yes":
             return "generate"
         else:
-            if state["search_count"] > 2: 
+            if state["search_count"] > 2:
                 print("   (Max retries reached, generating anyway...)")
                 return "generate"
             return "rewrite"
@@ -250,10 +248,7 @@ def build_graph():
     workflow.add_conditional_edges(
         "grade_documents",
         decide_to_generate,
-        {
-            "generate": "generate",
-            "rewrite": "rewrite"
-        },
+        {"generate": "generate", "rewrite": "rewrite"},
     )
 
     workflow.add_edge("rewrite", "retrieve")
@@ -261,12 +256,13 @@ def build_graph():
 
     return workflow.compile()
 
+
 def run_graph_agent(question: str):
     app = build_graph()
     inputs = {"question": question, "search_count": 0, "needs_rewrite": "no", "documents": "", "generation": ""}
-    # Using stream to see progress if needed, but invoke is fine for simple return
     result = app.invoke(inputs)
     return result["generation"]
+
 
 # --- Legacy ReAct Agent ---
 def run_legacy_agent(question: str):
@@ -275,7 +271,6 @@ def run_legacy_agent(question: str):
     from langchain_core.tools.retriever import create_retriever_tool
     from langgraph.prebuilt import create_react_agent as lg_create_react_agent
 
-    # --- Build tools ---
     tools = []
     for key, retriever in RETRIEVERS.items():
         tools.append(create_retriever_tool(
@@ -289,7 +284,6 @@ def run_legacy_agent(question: str):
 
     llm = get_llm()
 
-    # --- Build tool descriptions dynamically (replaces {tools} placeholder) ---
     tool_names = "\n".join([f"- {t.name}: {t.description}" for t in tools])
     tool_list = ", ".join([t.name for t in tools])
 
@@ -304,7 +298,7 @@ Thought: you should always think about what to do
 Action: the action to take, must be one of [{tool_list}]
 Action Input: the input to the action
 Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
+... (repeat as needed)
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question
 
@@ -315,7 +309,6 @@ Behavioral Rules:
 4. Citations: Always cite the source tool used (e.g., [Source: Apple], [Source: Tesla]).
 """
 
-    # --- LangGraph native ReAct agent (replaces deprecated create_react_agent) ---
     agent_executor = lg_create_react_agent(
         model=llm,
         tools=tools,
@@ -324,16 +317,12 @@ Behavioral Rules:
 
     try:
         result = agent_executor.invoke({"messages": [{"role": "user", "content": question}]})
-        messages = result["messages"]
-        final_message = messages[-1]
-        
-        # --- Always extract string content ---
+        final_message = result["messages"][-1]
         if hasattr(final_message, "content"):
             return final_message.content
         elif isinstance(final_message, dict):
             return final_message.get("content", str(final_message))
         else:
             return str(final_message)
-            
     except Exception as e:
         return f"Legacy Agent Error: {e}"

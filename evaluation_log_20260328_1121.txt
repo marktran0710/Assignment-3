@@ -1,0 +1,226 @@
+
+==================================================
+📄 ASSIGNMENT 3 EVALUATION REPORT
+⏰ Time: 2026-03-28 11:21:39
+🤖 Agent Mode: GRAPH
+==================================================
+
+🚀 STARTING AI-POWERED EVALUATION...
+==================================================
+
+Running: Test A: Apple Revenue...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: 根據 Apple Inc. CONDENSED CONSOLIDATED STATEMENTS OF OPERATIONS (Unaudited) 的資料，Apple 2024 年的總營收 (Total net sales) 是 $391,035 億美元。
+✅ PASS (10.26s)
+--------------------------------------------------
+Running: Test B: Tesla R&D...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: 根據提供的財務報表，Tesla 2024 年的研發費用 (R&D expenses) 為 4,540 萬美元 [Source: Tesla]。
+❌ FAIL (10.18s)
+   Agent Answer: 根據提供的財務報表，Tesla 2024 年的研發費用 (R&D expenses) 為 4,540 萬美元 [Source: Tesla]。
+   Judge Verdict: FAIL
+
+REASON: THE AGENT'S ANSWER DOES NOT SEMANTICALLY CONTAIN THE FACT '4.77 BILLION'. THE ANSWER CONTAINS '4,540 萬美元', WHICH IS EQUIVALENT TO 4.54 BILLION, NOT 4.77 BILLION.
+--------------------------------------------------
+Running: Test D: Apple Services Cost...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: 根據 Apple Inc. CONDENSED CONSOLIDATED STATEMENTS OF OPERATIONS (Unaudited) 的資料，2024 年的「服務成本 (Cost of sales - Services)」是 6,485 萬美元（Source: Apple）。
+❌ FAIL (10.08s)
+   Agent Answer: 根據 Apple Inc. CONDENSED CONSOLIDATED STATEMENTS OF OPERATIONS (Unaudited) 的資料，2024 年的「服務成本 (Cost of sales - Services)」是 6,485 萬美元（Source: Apple）。
+   Judge Verdict: FAIL
+
+THE AGENT'S ANSWER DOES NOT SEMANTICALLY CONTAIN THE FACT '25,119'.
+--------------------------------------------------
+Running: Test E: Tesla Energy Revenue...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: Tesla 2024 年第四季度能源發電與儲存 (Energy generation and storage) 產品營收為多少？
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: Tesla 2024 年第四季度能源發電與儲存產品營收（Revenue from Energy Generation and Storage Products）為多少？
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: I don't know.
+❌ FAIL (27.67s)
+   Agent Answer: I don't know.
+   Judge Verdict: FAIL
+--------------------------------------------------
+Running: Test G: Unknown Info...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: "Apple 預計 2025 年 iPhone 17 售價，iPhone 17 價格預測，iPhone 17 發布日期及售價，Apple 未來 iPhone 17 財務預測，iPhone 17 售價預估，2025 年 iPhone 17 財務分析"
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: "Apple iPhone 17 projected revenue, iPhone 17 price forecast 2025, Apple Q4 2025 earnings estimate, iPhone 17 sales prediction, Apple fiscal year 2025 iPhone revenue projection, iPhone 17 market share analysis, Apple iPhone 17 profit margin estimate."
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+   (Max retries reached, generating anyway...)
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: I don't know.
+❌ FAIL (42.92s)
+   Agent Answer: I don't know.
+   Judge Verdict: FAIL
+
+REASON: THE AGENT'S ANSWER DOES NOT CONTAIN ANY OF THE REQUIRED FACTS FROM CRITERIA 1, AND IT DOES NOT EXPLICITLY STATE THAT THE INFORMATION IS UNKNOWN OR CANNOT BE PROVIDED.
+--------------------------------------------------
+Running: Test A1 [Eng]: Apple Revenue...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: $391,035 million [Source: Apple]
+✅ PASS (21.30s)
+--------------------------------------------------
+Running: Test A2 [Eng]: Tesla Automotive Revenue...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: $ 72,480 million [Source: Tesla]
+❌ FAIL (20.56s)
+   Agent Answer: $ 72,480 million [Source: Tesla]
+   Judge Verdict: FAIL
+
+REASON: THE AGENT'S ANSWER CONTAINS THE FACT '72,480 MILLION', BUT IT DOES NOT CONTAIN THE EXPECTED FACT '78,512'.
+--------------------------------------------------
+Running: Test B1 [Mixed]: Apple R&D...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: 根據 Apple Inc. CONDENSED CONSOLIDATED STATEMENTS OF OPERATIONS (Unaudited) 的資料，Apple 2024 年的研發費用 (Research and development expenses) 為 31,370 美元百萬 [Source: Apple]。
+✅ PASS (24.45s)
+--------------------------------------------------
+Running: Test B2 [Mixed]: Tesla CapEx...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: Tesla 2024 年資本支出預算 (Capital Expenditure Budget) 或 Tesla 2024 年資本支出預期 (Expected Capital Expenditure)
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: 根據提供的資訊，我們知道 Tesla 在 2023 年的資本支出預算為 RMB 14.08 億 [Source: Tesla]。
+❌ FAIL (30.57s)
+   Agent Answer: 根據提供的資訊，我們知道 Tesla 在 2023 年的資本支出預算為 RMB 14.08 億 [Source: Tesla]。
+   Judge Verdict: FAIL
+
+THE AGENT'S ANSWER DOES NOT CONTAIN THE REQUIRED FACTS ['11', 'BILLION', '11,153'] AND DOES NOT PROVIDE THE CAPITAL EXPENDITURE FOR 2024, BUT RATHER FOR 2023.
+--------------------------------------------------
+Running: Test C1 [Eng]: R&D Comparison...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: both
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: I don't know. The provided context only includes Apple's financial data, but not Tesla's.
+❌ FAIL (23.31s)
+   Agent Answer: I don't know. The provided context only includes Apple's financial data, but not Tesla's.
+   Judge Verdict: FAIL
+--------------------------------------------------
+Running: Test C2 [Eng]: Gross Margin Analysis...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: both
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: I don't know. The provided context only includes Apple's financial data, and there is no information about Tesla's financial data.
+✅ PASS (23.50s)
+--------------------------------------------------
+Running: Test D1 [Eng]: Apple Services Cost...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: According to the Consolidated Statements of Operations, Apple's 'Cost of sales' specifically for 'Services' in 2024 was $6,485 million [Source: Apple].
+❌ FAIL (24.70s)
+   Agent Answer: According to the Consolidated Statements of Operations, Apple's 'Cost of sales' specifically for 'Services' in 2024 was $6,485 million [Source: Apple].
+   Judge Verdict: FAIL
+
+THE AGENT'S ANSWER DOES NOT SEMANTICALLY CONTAIN THE FACT '25,119' AND DOES NOT CONTAIN THE FORBIDDEN INFORMATION, BUT IT DOES NOT MEET THE FIRST CRITERION.
+--------------------------------------------------
+Running: Test E1 [Mixed]: 2025 Projection (Trap)...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: "財報中有提到 Apple 2025 年 iPhone 銷售預測或目標嗎？"
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+--- 🔄 REWRITING QUERY ---
+   New Question: "財報中有提到 Apple 2025 年 iPhone 銷售預測或目標，且是否有相關的財務指標或業績目標？"
+--- 🔍 RETRIEVING ---
+🎯 Routing to: apple
+--- ⚖️ GRADING ---
+   ❌ IRRELEVANT → Triggering Rewrite
+   (Max retries reached, generating anyway...)
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: I don't know.
+❌ FAIL (45.53s)
+   Agent Answer: I don't know.
+   Judge Verdict: FAIL
+--------------------------------------------------
+Running: Test F1 [Eng]: CEO Identity...
+--- 🔍 RETRIEVING ---
+🎯 Routing to: tesla
+--- ⚖️ GRADING ---
+   ✅ RELEVANT → Proceeding to Generate
+--- ✍️ GENERATING ---
+   ✅ Answer generated successfully.
+A: Elon Musk [Source: Exhibit 32.1, SECTION 1350 CERTIFICATIONS].
+✅ PASS (20.11s)
+--------------------------------------------------
+
+📊 FINAL SCORE: 5/14

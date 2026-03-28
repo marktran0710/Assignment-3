@@ -11,3 +11,4 @@ cache/
 *.csv
 chroma_db/
 .env
+chroma_db_bk/

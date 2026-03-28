@@ -22,7 +22,7 @@ FILES = {
 # ==============================================================================
 # 3. Embedding Model (Can Change)
 # ==============================================================================
-LOCAL_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+LOCAL_EMBEDDING_MODEL = "sentence-transformers/all-mpnet-base-v2"
 
 def get_embeddings():
     print(colored(f"🔄 Loading Local Embedding Model: {LOCAL_EMBEDDING_MODEL}...", "cyan"))
@@ -47,7 +47,7 @@ def get_llm(temperature=0):
             model=os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
             temperature=temperature,
             api_key=api_key,
-            max_tokens=2048
+            max_tokens=512
         )
 
     elif provider == "google":
@@ -56,7 +56,7 @@ def get_llm(temperature=0):
         if not api_key:
             print(colored("⚠️ Warning: GOOGLE_API_KEY not found!", "red"))
         return ChatGoogleGenerativeAI(
-            model=os.getenv("GOOGLE_MODEL", "gemini-2.0-flash"),
+            model=os.getenv("GOOGLE_MODEL", "gemini-2.5-flash"),
             temperature=temperature,
             google_api_key=api_key,
             convert_system_message_to_human=True,
